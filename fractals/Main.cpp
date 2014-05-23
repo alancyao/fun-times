@@ -18,9 +18,40 @@ class Viewport {
     int w, h; // width and height
 };
 
-/* Statics */
+class Pixel {
+ public:
+  Pixel(complex<float> c, int i, int j);
+  complex<float> c, d;
+  float r, g, b;
+  int iter, i, j; //i, j screen coords location
+  void iterate();
+  void draw();
+  void update(complex<float> c);
+};
+
+Pixel::Pixel(complex<float> c, int i, int j) {
+  d = complex<float> (0, 0);
+  iter = 0;
+  this->i = i;
+  this->j = j;
+  this->c = c;
+  r = g = b = 0.0f;
+}
+
+void Pixel::update(complex<float> c) { 
+  this->c = c; 
+  d = complex<float> (0, 0);
+  this->iter = 0; 
+  r = g = b = 0.0f;
+}
+
+/* Vars */
 Viewport viewport;
 float minx = -2, maxx = 1, miny = -1, maxy = 1;
+vector<Pixel> pixels;
+int max_iter = 100;
+float remap(float v, float froml, float fromh, float tol, float toh) {
+  return ((v-froml) * (toh - tol))/(fromh - froml) + tol; }
 
 void myReshape(int w, int h) {
   viewport.w = w;
@@ -32,14 +63,20 @@ void myReshape(int w, int h) {
   gluOrtho2D(0, viewport.w, 0, viewport.h);
 }
 
-void initScene() {
-  glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-  myReshape(viewport.w,viewport.h);
+void Pixel::draw() {
+  glColor3f(r, g, b);
+  glVertex2f(i + 0.5, j + 0.5);
 }
 
-void setPixel(int x, int y, GLfloat r, GLfloat g, GLfloat b) {
-  glColor3f(r, g, b);
-  glVertex2f(x + 0.5, y + 0.5);
+void update_pixel_locations() {
+  for (Pixel& p : pixels) {
+    p.update(complex<float>(remap(p.i, 0, viewport.w, minx, maxx), remap(p.j, 0, viewport.h, miny, maxy)));
+  }
+}
+
+void initScene() {
+  myReshape(viewport.w,viewport.h);
+  glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 }
 
 void HSVtoRGB(int h, float s, float v, float& r, float& g, float& b) {
@@ -67,17 +104,11 @@ void HSVtoRGB(int h, float s, float v, float& r, float& g, float& b) {
   r += m; g += m; b += m;
 }
 
-void inSet(complex<float> c, float& r, float& g, float& b) {
-  complex<float> d {0.0, 0.0};
-  int iter = 0, max_iter = 300;
+void Pixel::iterate() {
   while (norm(d) < 4.0f && iter++ < max_iter) {
     d = d*d + c;
   }
   HSVtoRGB(iter * (360.0f/max_iter), 1, 1, r, g, b); 
-}
-
-float remap(float v, float froml, float fromh, float tol, float toh) {
-  return ((v-froml) * (toh - tol))/(fromh - froml) + tol;
 }
 
 void myDisplay() {
@@ -95,19 +126,41 @@ void myDisplay() {
 
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
+  glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
   glBegin(GL_POINTS);
 
-  float r, g, b;
-  for (auto i = 0; i < viewport.w; ++i) {
-    for (auto j = 0; j < viewport.h; ++j) {
-      inSet(complex<float>(remap(i, 0, viewport.w, minx, maxx), remap(j, 0, viewport.h, miny, maxy)), r, g, b);
-      setPixel(i, j, r, g, b);
-    }
+  for (Pixel p : pixels) {
+    p.iterate();
+    p.draw();
   }
 
   glEnd();
   glutSwapBuffers();
+}
+
+void mySpecial(int key, int xx, int yy) {
+  switch (key) {
+    case GLUT_KEY_LEFT:
+      minx -= 0.1*(maxx-minx);
+      maxx -= 0.1*(maxx-minx);
+      break;
+    case GLUT_KEY_RIGHT:
+      minx += 0.15*(maxx-minx);
+      maxx += 0.15*(maxx-minx);
+      break;
+    case GLUT_KEY_UP:
+      miny += 0.1*(maxy-miny);
+      maxy += 0.1*(maxy-miny);
+      break;
+    case GLUT_KEY_DOWN:
+      miny -= 0.1*(maxy-miny);
+      maxy -= 0.1*(maxy-miny);
+      break;
+    default:
+      break;
+  }
+  cout << "Shifted: " << minx << ' ' << maxx << ' ' << miny << ' ' << maxy << endl;
 }
 
 void myKeyboard(unsigned char key, int xx, int yy) { 
@@ -117,21 +170,48 @@ void myKeyboard(unsigned char key, int xx, int yy) {
     break;
   case 'i':
     /* Another iteration */
-    glutPostRedisplay();
+    max_iter += 5;
+    cout << "Max iterations is now " << max_iter << endl;
+    break;
+  case 'u':
+    max_iter -= 5;
+    cout << "Max iterations is now " << max_iter << endl;
     break;
   case '=':
+    //minx += 0.15;
+    //maxx -= 0.15;
+    //miny += 0.1;
+    //maxy -= 0.1;
+    minx *= 0.7;
+    maxx *= 0.7;
+    miny *= 0.7;
+    maxy *= 0.7;
+    cout << "Zooming in: " << minx << ' ' << maxx << ' ' << miny << ' ' << maxy << endl;
     break;
   case '-':
+    //minx -= 0.15;
+    //maxx += 0.15;
+    //miny -= 0.1;
+    //maxy += 0.1;
+    minx *= 1.3;
+    maxx *= 1.3;
+    miny *= 1.3;
+    maxy *= 1.3;
+    cout << "Zooming out: " << minx << ' ' << maxx << ' ' << miny << ' ' << maxy << endl;
+    break;
+  case 'r':
+    cout << "Redrawing... " << endl;
+    update_pixel_locations();
+    glutPostRedisplay();
     break;
   default:
     break;
   }
-  glutPostRedisplay();
 }
 
 int main(int argc, char *argv[]) {
   glutInit(&argc, argv);
-  
+
   glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH );
   viewport.w = 720;
   viewport.h = 480;
@@ -140,9 +220,16 @@ int main(int argc, char *argv[]) {
   glutCreateWindow(argv[0]);
   initScene();
 
+  for (int i = 0; i < viewport.w; ++i) {
+    for (int j = 0; j < viewport.h; ++j) {
+      pixels.emplace_back(complex<float>(remap(i, 0, viewport.w, minx, maxx), remap(j, 0, viewport.h, miny, maxy)), i, j);
+    }
+  }
+
   glutDisplayFunc(myDisplay);
   glutReshapeFunc(myReshape);
   glutKeyboardFunc(myKeyboard);
+  glutSpecialFunc(mySpecial);
   glutMainLoop();  
 
   return 0;
