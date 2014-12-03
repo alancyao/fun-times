@@ -107,6 +107,9 @@ class SListNode:
         if self.next:
             self.next = self.next.next
 
+    def __str__(self):
+        return "SListNode: {}".format(self.item)
+
 class SLinkedList:
     """ Very basic singly linked list. Also has a tail pointer. """
     def __init__(self, lst=None):
@@ -114,7 +117,7 @@ class SLinkedList:
         self.tail = None
         if lst:
             for item in lst:
-                self.insert_back(lst)
+                self.insert_front(item)
 
     def __len__(self):
         if not self.head:
@@ -133,9 +136,10 @@ class SLinkedList:
         if self.tail:
             self.tail = self.tail.insert_after(item)
         else:
-            insert_front(self, item)
+            self.insert_front(item)
 
     def insert_front(self, item):
         self.head = SListNode(item, self.head)
-
+        if not self.tail:
+            self.tail = self.head
 
