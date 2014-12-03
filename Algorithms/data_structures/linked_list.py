@@ -62,7 +62,7 @@ class LinkedList:
         If the list node doesn't exist, return None
         """
         cur = self.sentinel.next
-        while cur is not self.sentinel
+        while cur is not self.sentinel:
             if cur.item == item:
                 return cur
             cur = cur.next
@@ -94,5 +94,48 @@ class LinkedList:
     def back(self):
         """ Back item of the list """
         return self.sentinel.prev.item
+
+class SListNode:
+    def __init__(self, item, next=None):
+        self.item, self.next = item, next
+
+    def insert_after(self, item):
+        self.next = SListNode(item, self.next)
+        return self.next
+
+    def delete_after(self):
+        if self.next:
+            self.next = self.next.next
+
+class SLinkedList:
+    """ Very basic singly linked list. Also has a tail pointer. """
+    def __init__(self, lst=None):
+        self.head = None
+        self.tail = None
+        if lst:
+            for item in lst:
+                self.insert_back(lst)
+
+    def __len__(self):
+        if not self.head:
+            return 0
+        if not self.head.next:
+            return 1
+        N, tort, hare = 1, self.head.next, self.head.next.next
+        while tort and (tort is not hare):
+            N += 1
+            tort = tort.next
+            if hare and hare.next:
+                hare = hare.next.next
+        return N
+
+    def insert_back(self, item):
+        if self.tail:
+            self.tail = self.tail.insert_after(item)
+        else:
+            insert_front(self, item)
+
+    def insert_front(self, item):
+        self.head = SListNode(item, self.head)
 
 

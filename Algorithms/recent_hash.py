@@ -1,28 +1,43 @@
 #!/usr/bin/env python3
-from ..data_structures.linked_list import *
+from data_structures.linked_list import *
 
 """ Problem description:
 Provide a hash table-like data structure which supports the following queries in constant time: set(key, value), get(key), delete(key), and last(). The first three are self-explanatory. The last() query does not modify state, and returns the last key which was set or get, ignoring deleted keys.
 """
 
 class RecentDict():
-  def __init__(self):
-    self.d = {}
+    def __init__(self):
+        self.d = {}
+        self.recent = LinkedList()
 
-  def set(key, value):
-    pass
+    def set(self, key, value):
+        if key in self.d:
+            self.recent.delete(self.d[key][1])
+        new = self.recent.insertFront(key)
+        self.d[key] = (value, new)
 
-  def get(key):
-    pass
+    def get(self, key):
+        if key in self.d:
+            self.recent.delete(self.d[key][1])
+            self.recent.insertFront(key)
+            return self.d[key][0]
+        return None
 
-  def delete(key):
-    pass
+    def delete(self, key):
+        if key in self.d:
+            self.recent.delete(self.d[key][1])
+            del self.d[key]
 
-  def last():
-    pass
+    def last(self):
+        return self.recent.front()
 
 def main():
-  pass
+    """ Runs some basic sanity checks """
+    d = RecentDict()
+    d.set('a', 'b')
+    d.set('c','d')
+
+
 
 if __name__ == '__main__':
-  main()
+    main()
