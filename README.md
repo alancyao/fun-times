@@ -1,2 +1,2 @@
-fun_stuff
+Various personal projects
 =========

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from trie import *
+from data_structures.trie import *
 
 """Provide an algorithm to efficiently answer queries as follows: you are given a dictionary of legal English words. Each query provides a 4x4 grid of letters. Find the longest English word which forms a path in the grid (moving orthogonally and diagonally, possibly using the same space multiple times).
 
