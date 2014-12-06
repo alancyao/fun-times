@@ -111,15 +111,28 @@ class SListNode:
         return "SListNode: {}".format(self.item)
 
 class SLinkedList:
-    """ Very basic singly linked list. Also has a tail pointer. """
+    """ Very basic singly linked list with a tail pointer.
+    A node with a None pointer signifies the end of the list. """
     def __init__(self, lst=None):
         self.head = None
         self.tail = None
         if lst:
             for item in lst:
-                self.insert_front(item)
+                self.insert_back(item)
+
+    def __iter__(self):
+        """ Yields each element of the list. If there is a cycle,
+        yield infinitely. """
+        cur = self.head
+        while cur:
+            yield cur.item
+            cur = cur.next
+
+    def __str__(self):
+        return str([x for x in self])
 
     def __len__(self):
+        """ Length checker that avoids infinite looping on cycles. """
         if not self.head:
             return 0
         if not self.head.next:
