@@ -8,13 +8,21 @@ Alice and Bob are playing the following game: they have a list of valid English 
 """ Some variables for testing """
 words1 = ['excellent', 'excellings', 'exconvict', 'exist',
     'existance', 'exists', 'excellents']
+words2 = ['hell', 'hello']
+words3 = ['yo', 'yoyo']
 
 def can_win_game(words):
-  trie = Trie(words)
-
+    trie = Trie(words)
+    def dp(node, depth):
+        if not node.children:
+            return depth%2
+        return any([dp(c, depth+1) for c in node.children.values()])
+    return dp(trie.root, 0)
 
 def main():
-  pass
+    print("words: {}\ncan win: {}".format(words1, can_win_game(words1)))
+    print("words: {}\ncan win: {}".format(words2, can_win_game(words2)))
+    print("words: {}\ncan win: {}".format(words3, can_win_game(words3)))
 
 if __name__ == '__main__':
   main()

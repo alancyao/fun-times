@@ -1,3 +1,5 @@
+from collections import deque
+
 class TreeNode:
     def __init__(self, item=None, parent=None, children=[]):
         self.item = item
@@ -18,7 +20,6 @@ class Tree:
 
     def __str__(self):
         """ Prints rows of tree with no connections """
-        from collections import deque
         s = ""
         q, lvl = deque([(self.root, 0)]), 0
         while q:
@@ -30,6 +31,25 @@ class Tree:
             for child in node.children:
                 q.append((child, lvl+1))
         return s
+
+    def bfs(self):
+        """ Yields nodes in BFS order """
+        q = deque([self.root])
+        while q:
+            n = q.popleft()
+            yield n
+            for c in n.children:
+                q.append(c)
+
+    def dfs(self):
+        """ Yields nodes in DFS order """
+        q = deque([self.root])
+        while q:
+            n = q.pop()
+            yield n
+            for c in n.children:
+                q.append(c)
+
 
 
 
