@@ -31,8 +31,14 @@ def max_subarray(arr):
     return max(arr)
   return tot
 
+def closest_numbers(arr):
+  s = sorted(arr)
+  diffs = [abs(s[x] - s[x+1]) for x in range(len(s)-1)]
+  ind, val = min(enumerate(diffs), key=lambda x:x[1])
+  return s[ind], s[ind+1]
+
 def main():
-  run_max_subarray()
+  #run_max_subarray()
 
 if __name__ == '__main__':
   main()
