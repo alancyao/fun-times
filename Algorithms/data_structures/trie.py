@@ -14,7 +14,10 @@ class TrieNode:
 
   def find(self, s, find_full_word=False):
     if not s:
-      return (find_full_word and self.is_word) or (not find_full_word)
+      if find_full_word:
+        return self.is_word
+      else:
+        return True
     elif s[0] not in self.children:
       return False
     else:
